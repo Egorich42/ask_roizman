@@ -8,58 +8,14 @@
  [clojure.string :as str]
  [clojure.data.json :as json]
  [compojure.route :as route]
- [clojurewerkz.elastisch.rest :as esr]
- [clojurewerkz.elastisch.rest.document :as esd]
- [clojurewerkz.elastisch.query :as query]
- [clojurewerkz.elastisch.rest.response :as esrsp]
+ [ask-roizman.daq :as daq]
  ))
 
 ;; LINK -http://clojureelasticsearch.info/articles/getting_started.html#updating-documents
 
 
-(def index-info {:index-name "peoples_words"
-                 :type "roizman"})
-
-(def elastic-adress "http://127.0.0.1:9200")
-
-(def conn (esr/connect elastic-adress))
-
-(def doc {"username" "Egorich" "age" 25})
-
-(def roizman-sentences
-  (let [text (utils/extract-from-file "demo_text.txt")]
-    {:sentences (utils/text-to-sentences-vector text)}  ))
-
-
-
-;;GET SINGLE DOC FROM BASE (prn (get-single-doc "Roizman"))
-(defn get-single-doc
-  [{index :index-name type :type} doc-id]
-    (esd/get conn index type (str doc-id)))
-
-
-;;SEARCH SINGLE DOC FROM BASE ON NAME  (prn(search-doc "Roizman"))
-(defn
-  search-doc [name]
-  (esd/search conn "peoples_words" "roizman" :query (query/term "name" (str/lower-case name))))
-
-
-;; CREATE NEW DOC IN BASE  (create-doc index-info doc)
- (defn create-doc
-   [{index :index-name type :type} id new-doc]
-     (esd/put conn index type (str id) new-doc))
-
-
-;; UPDATE SINGLE DOCUMENT (update-doc index-info doc)
-(defn update-doc
-  [{index :index-name type :type} id current-doc ]
-  (esd/replace conn index type (str id) (assoc current-doc "name" "Evgeny")))
-
-
-
 (defn extract-sentences [doc-id]
-  (get-in (get-single-doc index-info (str doc-id)) [:_source :sentences]))
-
+  (get-in (daq/get-single-doc daq/index-info (str doc-id)) [:_source :sentences]))
 
 
 (def roizman-says (utils/get-random-sentence (extract-sentences "words")))
@@ -68,8 +24,9 @@
 
 ;; (create-doc index-info "words" roizman-sentences)
 
-
 ;; (update-doc index-info "words" roizman-sentences)
+
+
 
 ;; WORK WITH ELASTIC THOUGH HTTP-KIT
 
